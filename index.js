@@ -18,18 +18,21 @@ const keys = {
     d: {
         pressed: false,
     },
-    w: {
-        pressed: false,
-    },
     ArrowLeft: {
         pressed: false,
     },
     ArrowRight: {
         pressed: false,
     },
-    ArrowUp: {
-        pressed: false,
-    },
+}
+
+function rectangularCollision({ rectangle1, rectangle2 }) {
+    return (
+        rectangle1.attackBox.position.x + rectangle1.attackBox.width >= rectangle2.position.x &&
+        rectangle1.attackBox.position.x <= rectangle2.position.x + rectangle2.width &&
+        rectangle1.attackBox.position.y + rectangle1.attackBox.height >= rectangle2.position.y &&
+        rectangle1.attackBox.position.y <= rectangle2.position.y + rectangle2.height
+    );
 }
 
 // character related operations
@@ -43,9 +46,16 @@ const player = new Character({
         x: 0,
         y: 0,
     },
+    weaponOffset: {
+        x: 0,
+        y: 0,
+    },
     speed: 5,
     height: 150,
     width: 50,
+    weaponReach: 100,
+    weaponHeight: 50,
+    isFacingLeft: false,
 })
 
 const enemy = new Character({
@@ -58,11 +68,12 @@ const enemy = new Character({
         y: 0,
     },
     speed: 3,
-    height: 150,
+    height: 200,
     width: 50,
+    weaponReach: 100,
+    weaponHeight: 50,
+    isFacingLeft: true,
 })
-
-
 
 function animate() {
     window.requestAnimationFrame(animate);
@@ -71,7 +82,6 @@ function animate() {
     c.fillRect(0, 0, canvas.width, canvas.height);
     player.update();
     enemy.update();
-    console.log('animating..');
 
     player.velocity.x = 0;
     enemy.velocity.x = 0;
@@ -89,6 +99,29 @@ function animate() {
     } else if (keys.ArrowRight.pressed && enemy.lastKeyPressed === 'ArrowRight') {
         enemy.velocity.x = enemy.speed;
     }
+
+    // collision detection
+    if (
+        rectangularCollision({
+            rectangle1: player,
+            rectangle2: enemy,
+        }) &&
+        player.isAttacking
+    ) {
+        player.isAttacking = true;
+        console.log('attacked enemy');
+    }
+
+    if (
+        rectangularCollision({
+            rectangle1: enemy,
+            rectangle2: player,
+        }) &&
+        enemy.isAttacking
+    ) {
+        enemy.isAttacking = true;
+        console.log('attacked player');
+    }
 }
 
 animate();
@@ -105,8 +138,10 @@ window.addEventListener('keydown', (event) => {
             player.lastKeyPressed = 'd';
             break;
         case 'w':
-            keys.w.pressed = true;
             player.velocity.y -= jumpVel;
+            break;
+        case ' ':
+            player.attack();
             break;
         
         // enemy buttons
@@ -119,8 +154,10 @@ window.addEventListener('keydown', (event) => {
             enemy.lastKeyPressed = 'ArrowRight';
             break;
         case 'ArrowUp':
-            keys.ArrowUp.pressed = true;
             enemy.velocity.y -= jumpVel;
+            break;
+        case 'ArrowDown':
+            enemy.attack();
             break;
     }
 });
@@ -135,7 +172,6 @@ window.addEventListener('keyup', (event) => {
             keys.d.pressed = false;
             break;
         case 'w':
-            keys.w.pressed = false;
             break;
 
         // enemy buttons
