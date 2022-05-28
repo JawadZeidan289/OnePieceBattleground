@@ -1,10 +1,11 @@
 class Character {
     
-    constructor({position, velocity, speed, height, width,
+    constructor({position, velocity, speed, health = 100, height, width,
         weaponReach, weaponHeight, attackAnimationTime = 100, isFacingLeft}) {
         this.position = position;
         this.velocity = velocity;
         this.speed = speed;
+        this.health = health;
         this.height = height;
         this.width = width;
         this.isFacingLeft = isFacingLeft,
@@ -52,16 +53,10 @@ class Character {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
 
-        if (this.position.y + this.height + this.velocity.y >= canvas.height) {
+        if (this.position.y + this.height + this.velocity.y >= canvas.height - 50) {
             this.velocity.y = 0;
         } else {
             this.velocity.y += gravity;
-        }
-
-        if (this.position.x + this.width + this.velocity.x >= canvas.width) {
-            this.velocity.x = 0;
-        } else {
-
         }
     }
 
